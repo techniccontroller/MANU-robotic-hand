@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<head>
+<title>robotic hand MANU</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<style>
+button {
+   background-color: #990033;
+   border: none;
+   color: white;
+   padding: 7px 15px;
+   margin: 3px;
+   text-align: center;
+   cursor: pointer;
+   border-radius: 5em;
+   width:90px;
+}
+.toggle label {
+   position: relative;
+   display: inline-block;
+   width: 7em;
+   height: 3em;
+   vertical-align: middle;
+}
+.toggle input {
+   display: none;
+}
+.toggle .slider {
+   position: absolute;
+   cursor: pointer;
+   top: 0.5em;
+   left: 2em;
+   width: 4em;
+   height: 2em;
+   background-color: #990033;
+   transition: all .3s ease-in-out;
+   border-radius: 1em;
+}
+.toggle .slider:before { 
+   position: absolute;
+   content: "";
+   height: 1.6em;
+   width: 1.6em;
+   left: 0.2em;
+   bottom: 0.2em;
+   background-color: white;
+   border-radius: 50%;
+   transition: all .3s ease-in-out;
+}
+.toggle input:checked + .slider {
+   background-color: #5a9900;
+}
+.toggle input:focus + .slider {
+   background-color: idk;
+   box-shadow: 0 0 1px #5a9900;
+}
+.toggle input:checked + .slider:before {
+   -webkit-transform: translateX(1.9em); "
+   -ms-transform: translateX(1.9em);
+   transform: translateX(1.9em);
+}
+input[type=range] {
+    /*removes default webkit styles*/
+     -webkit-appearance: none;
+    
+    /*fix for FF unable to apply focus style bug */
+     border: none;
+    
+    /*required for proper track sizing in FF*/
+     width: 300px;
+}
+input[type=range]::-webkit-slider-runnable-track {
+     width: 300px;
+     height: 10px;
+     background: #a8a8a8;
+     border: none;
+     border-radius: 3px;
+}
+input[type=range]::-webkit-slider-thumb {
+     -webkit-appearance: none;
+     border: none;
+     height: 16px;
+     width: 30px;
+     border-radius: 30%;
+     background: #990033;
+     margin-top: -4px;
+}
+input[type=range]:focus {
+     outline: none;
+}
+input[type=range]:focus::-webkit-slider-runnable-track {
+     background: #a2a2a2;
+}
+input[type=range]::-moz-range-track {
+     width: 300px;
+     height: 5px;
+     background: #a8a8a8;
+     border: none;
+     border-radius: 3px;
+}
+input[type=range]::-moz-range-thumb {
+     border: none;
+     height: 16px;
+     width: 30px;
+     border-radius: 50%;
+     background: #990033;
+}
+/*hide the outline behind the border*/
+input[type=range]:-moz-focusring{
+     outline: 1px solid white;
+     outline-offset: -1px;
+}
+input[type=range]::-ms-track {
+     width: 300px;
+     height: 10px;
+    
+    /*remove bg colour from the track, we'll use ms-fill-lower and ms-fill-upper instead */
+     background: transparent;
+    
+    /*leave room for the larger thumb to overflow with a transparent border */
+     border-color: transparent;
+     border-width: 6px 0;
+
+    /*remove default tick marks*/
+     color: transparent;
+}
+input[type=range]::-ms-fill-lower {
+     background: #a8a8a8;
+     border-radius: 10px;
+}
+input[type=range]::-ms-fill-upper {
+     background: #a8a8a8;
+     border-radius: 10px;
+}
+input[type=range]::-ms-thumb {
+     border: none;
+     height: 16px;
+     width: 30px;
+     border-radius: 50%;
+     background: #990033;
+}
+input[type=range]:focus::-ms-fill-lower {
+     background: #a2a2a2;
+}
+input[type=range]:focus::-ms-fill-upper {
+     background: #a2a2a2;
+}
+
+table{
+	width: 100%;
+}
+td {
+    border-bottom: 1px solid #ddd;
+}
+#snackbar {
+    visibility: hidden;
+    min-width: 200px;
+    margin-left: -125px;
+    background-color: #333;
+    color: #fff;
+    text-align: center;
+    border-radius: 5px;
+    padding: 16px;
+    position: fixed;
+    z-index: 1;
+    left: 50%;
+    bottom: 0px;
+	opacity: 0;
+    font-size: 17px;
+	-webkit-transition: bottom 0.5s; /* For Safari 3.1 to 6.0 */
+    transition: bottom 0.5s;
+	-webkit-transition: opacity 0.5s; /* For Safari 3.1 to 6.0 */
+    transition: opacity 0.5s;
+}
+
+#snackbar.show {
+    visibility: visible;
+	bottom: 30px;
+	opacity: 1;
+}
+</style>
+<script type="text/javascript">
+function sendCheckbox(id, cb) {
+    if (cb.checked) {
+        url = "led?nr=" + id + "&value=1";
+    } else {
+        url = "led?nr=" + id + "&value=0";
+    }
+    request = new XMLHttpRequest();
+    request.open("GET", url, true);
+    request.send(null);
+	showSnackbar("Processing LED complete.");
+}
+
+function sendbutton(id, action) {
+    url = "finger?nr=" + id + "&value=" + action;
+    request = new XMLHttpRequest();
+    request.open("GET", url, true);
+    request.send(null);
+	showSnackbar("Processing Finger " + (id+1) + " complete.");
+}
+
+function sendSlider(id, value) {
+    ValNum = "valueSlider" + id;
+    document.getElementById(ValNum).innerHTML = value;
+    url = "slider?nr=" + id + "&value=" + value;
+    request = new XMLHttpRequest();
+    request.open("GET", url, true);
+    request.send(null);
+	showSnackbar("Processing Slider complete.");
+}
+function showSnackbar(message) {
+    var x = document.getElementById("snackbar")
+    x.className = "show";
+	x.innerHTML = message;
+    setTimeout(function(){ x.className = x.className.replace("show", ""); }, 1000);
+}
+</script>
+</head>
+<font face="Arial">
+<div style="text-align: center; width: 100%; background: lightgrey">
+	<h1 style="margin:0px">MANU</h1>
+	<h4 style="margin-top:0px">robotic hand<h4>
+</div>
+<table>
+<tr> <th align="left">Finger</th></tr>
+<tr>
+  <td>Daumen</td>
+  <td>
+	  <div align="right">
+		  <button onclick="sendbutton(0,1);"/>EIN</button>
+		  <button onclick="sendbutton(0,0);"/>AUS</button>
+	  </div>
+  </td>
+</tr>
+<tr>
+  <td>Zeigefinger</td>
+  <td>
+	  <div align="right">
+		  <button onclick="sendbutton(1,1);"/>EIN</button>
+		  <button onclick="sendbutton(1,0);"/>AUS</button>
+	  </div>
+  </td>
+</tr>
+<tr>
+  <td>Mittelfinger</td>
+  <td>
+	  <div align="right">
+		  <button onclick="sendbutton(2,1);"/>EIN</button>
+		  <button onclick="sendbutton(2,0);"/>AUS</button>
+	  </div>
+  </td>
+</tr>
+<tr>
+  <td>Ringfinger</td>
+  <td>
+	  <div align="right">
+		  <button onclick="sendbutton(3,1);"/>EIN</button>
+		  <button onclick="sendbutton(3,0);"/>AUS</button>
+	  </div>
+  </td>
+</tr>
+<tr>
+  <td>Kleiner Finger</td>
+  <td>
+	<div align="right">
+		<button onclick="sendbutton(4,1);"/>EIN</button>
+		<button onclick="sendbutton(4,0);"/>AUS</button>
+	</div>
+  </td>
+</tr>
+</table>
+<br>
+<table>
+<tr> <th align="left">Handgelenk</th></tr>
+<tr>
+<td>
+<input type="range" style="width:100%; height: 30px;" id="slider1" min="0" max="100" value="50" step="1" onchange="sendSlider(1, this.value);"/>
+</td>
+<td>
+	<div align="center">
+		<span id="valueSlider1">50</span>
+	</div>
+</td>
+</table>
+<br>
+<table>
+<tr> <th align="left">LEDs</th></tr>
+<tr>
+<td>ROT</td>
+<td>
+	<div class="toggle" align="right">
+		<label>
+			<input type="checkbox" onclick="sendCheckbox(0,this);"><span class="slider"></span>
+		</label>
+	</div>
+</td>
+</tr>
+<tr>
+<td>GRUEN</td>
+<td>
+	<div class="toggle" align="right">
+		<label>
+			<input type="checkbox" onclick="sendCheckbox(1,this);"><span class="slider"></span>
+		</label>
+	</div>
+</td>
+</tr>
+<tr>
+<td>BLAU</td>
+<td>
+	<div class="toggle" align="right">
+		<label>
+			<input type="checkbox" onclick="sendCheckbox(2,this);"><span class="slider"></span>
+		</label>
+	</div>
+</td>
+</tr>
+</table>
+<br><br>
+<br><br>
+<div id="snackbar">Some text some message..</div>
+</font>
+</html>
